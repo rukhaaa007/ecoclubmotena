@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="ka" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ეკოკლუბი „მოთენა“ | ბალდის საჯარო სკოლა</title>
+  
+  <!-- Early Dark Mode Detection (Prevents FOUC) -->
+  <script>
+    (function() {
+      try {
+        var saved = localStorage.getItem('motena_theme');
+        if (saved === 'dark' || (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- SEO & Metadata -->
+  <meta name="description" content="ბალდის საჯარო სკოლის ეკოკლუბ «მოთენას» ვებგვერდი. ინფორმაცია ჩვენს საქმიანობაზე, ბალდაზე, მის ისტორიასა და ღირსშესანიშნაობებზე. მარტვილის მუნიციპალიტეტი, სოფელი ბალდა.">
+  <meta name="keywords" content="მოთენა, ეკოკლუბი მოთენა, ბალდის საჯარო სკოლა, მარტვილი, ბალდა, ბალდის კანიონი, მოთენას მთა, მოთენას მღვიმე, ჯორწყუს მღვიმე, არსენ ოქროჯანაშვილის მღვიმე, ტობას ჩანჩქერი, ონიორეს ჩანჩქერი, კაგუს ჩანჩქერი, ბალდის მონასტერი">
+  <meta property="og:title" content="ეკოკლუბი „მოთენა“ | ბალდის საჯარო სკოლა">
+  <meta property="og:description" content="ბალდის საჯარო სკოლის ეკოკლუბის ვებგვერდი. გაიგეთ მეტი ჩვენს საქმიანობაზე, ბალდის ისტორიასა და ღირსშესანიშნაობებზე.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-550219-2-2.jpg">
+  <meta name="theme-color" content="#166534">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Supabase JS Client (v2) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Google Fonts: Noto Sans Georgian & Noto Serif Georgian -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800&family=Noto+Serif+Georgian:wght@600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet CSS & JS for Interactive Map (Local files with CDN fallback) -->
+  <link rel="stylesheet" href="leaflet.css" />
+  <script src="leaflet.js"></script>
+  <script>
+    if (typeof L === 'undefined') {
+      document.write('<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">');
+      document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>');
+    }
+  </script>
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Supabase Config & Main Script -->
+  <script src="supabase-config.js"></script>
+  <script src="script.js" defer></script>
+</head>
+<body id="top" class="bg-stone-50 text-slate-800 antialiased selection:bg-emerald-700 selection:text-white flex flex-col min-h-screen">
+
+  <!-- Scroll Progress Indicator Bar -->
+  <div id="scroll-progress"></div>
+
+  <!-- ==================== HEADER & NAVIGATION ==================== -->
+  <header class="sticky top-0 z-40 w-full bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-b border-stone-200/80 dark:border-stone-800 transition-colors duration-200">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Logo -->
+        <a href="#top" class="flex items-center gap-2.5 sm:gap-3 group min-w-0">
+          <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-emerald-700 to-teal-900 flex items-center justify-center text-white shadow-sm group-hover:scale-105 transition-transform duration-200 flex-shrink-0">
+            <!-- Leaf & Mountain SVG Emblem -->
+            <svg class="w-5 h-5 sm:w-6 sm:h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m8 3 4 8 5-5 5 15H2L8 3z"/>
+              <path d="M12 12c.5-2 2-3.5 4-3.5 1.5 0 2.5 1 2 3-1 3.5-4 5.5-6 6.5" stroke="#34d399" stroke-width="2"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 sm:gap-2">
+              <span class="text-lg sm:text-xl font-extrabold tracking-tight text-slate-900 dark:text-stone-100 font-serif-geo">მოთენა</span>
+              <span class="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">ეკოკლუბი</span>
+            </div>
+            <p class="text-[11px] sm:text-xs text-slate-500 dark:text-stone-400 font-medium truncate hidden sm:block">ბალდის საჯარო სკოლა • მარტვილი</p>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Links (Exact 8 Sections) -->
+        <nav class="hidden lg:flex items-center gap-1 xl:gap-2">
+          <a href="#top" class="nav-link px-3 py-2 text-sm font-medium text-emerald-800 dark:text-emerald-400 rounded-lg hover:bg-emerald-50 dark:hover:bg-stone-800 transition">მთავარი</a>
+          <a href="#about" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">ჩვენ შესახებ</a>
+          <a href="#activities" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">აქტივობები</a>
+          <a href="#balda-history" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">ბალდის ისტორია</a>
+          <a href="#balda-sights" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">ღირსშესანიშნაობები</a>
+          <a href="#balda-map-section" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">რუკა</a>
+          <a href="#gallery" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">გალერეა</a>
+          <a href="#contact" class="nav-link px-3 py-2 text-sm font-medium text-slate-700 dark:text-stone-300 hover:text-emerald-700 dark:hover:text-emerald-400 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition">კონტაქტი</a>
+        </nav>
+
+        <!-- Right Side: Dark Mode Toggle & Admin Link -->
+        <div class="flex items-center gap-2">
+          <!-- Dark Mode Toggle Button -->
+          <button 
+            id="theme-toggle-btn" 
+            class="p-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-stone-600 hover:text-emerald-800 hover:bg-stone-100 dark:text-stone-300 dark:hover:text-emerald-400 dark:hover:bg-stone-800 transition flex items-center justify-center" 
+            aria-label="თემის შეცვლა"
+            title="დღის / ღამის რეჟიმი"
+          >
+            <!-- Moon icon (visible in light mode) -->
+            <svg class="w-5 h-5 dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
+            </svg>
+            <!-- Sun icon (visible in dark mode) -->
+            <svg class="w-5 h-5 hidden dark:block text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
+            </svg>
+          </button>
+
+          <!-- Admin Panel Link -->
+          <a 
+            href="admin.html" 
+            class="p-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-slate-500 hover:text-emerald-700 hover:bg-stone-100 dark:text-stone-400 dark:hover:text-emerald-400 dark:hover:bg-stone-800 transition" 
+            title="ადმინისტრატორის პანელი"
+            aria-label="ადმინისტრატორის პანელი"
+          >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+            </svg>
+          </a>
+
+          <!-- Mobile Menu Button -->
+          <button 
+            id="mobile-menu-btn" 
+            class="lg:hidden p-2.5 rounded-xl border border-stone-200 dark:border-stone-700 text-slate-800 dark:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition"
+            aria-label="მენიუს გახსნა"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+          </button>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Navigation -->
+    <div id="mobile-nav" class="hidden lg:hidden bg-white/95 dark:bg-stone-900/95 backdrop-blur-md border-t border-stone-200 dark:border-stone-800 px-4 pt-3 pb-6 space-y-1">
+      <a href="#top" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-emerald-800 dark:text-emerald-400 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">მთავარი</a>
+      <a href="#about" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">ჩვენ შესახებ</a>
+      <a href="#activities" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">აქტივობები</a>
+      <a href="#balda-history" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">ბალდის ისტორია</a>
+      <a href="#balda-sights" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">ღირსშესანიშნაობები</a>
+      <a href="#balda-map-section" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">რუკა</a>
+      <a href="#gallery" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">გალერეა</a>
+      <a href="#contact" class="mobile-nav-link block px-4 py-2.5 text-base font-medium text-slate-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 rounded-xl transition">კონტაქტი</a>
+      <div class="pt-3 border-t border-stone-200 dark:border-stone-800">
+        <a href="admin.html" class="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 font-semibold text-xs text-center">
+          ადმინისტრატორის პანელი
+        </a>
+      </div>
+    </div>
+  </header>
+
+
+  <!-- ==================== HERO SECTION ==================== -->
+  <section class="relative min-h-[85vh] sm:min-h-[88vh] flex items-center justify-center overflow-hidden bg-stone-950 text-white">
+    <!-- Verified Landscape Background (Balda Canyon & Nature) -->
+    <img 
+      src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-550219-2-2.jpg" 
+      alt="ბალდის ბუნება და კანიონი" 
+      class="absolute inset-0 w-full h-full object-cover object-center scale-105"
+      priority
+    />
+    
+    <!-- Clean Dark Gradient Overlay for Maximum Readability -->
+    <div class="absolute inset-0 bg-stone-950/75 sm:bg-stone-950/70 dark:bg-stone-950/80"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-stone-950 via-transparent to-stone-950/40"></div>
+
+    <div class="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center z-10 flex flex-col items-center">
+      
+      <!-- Subtitle Tag -->
+      <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-200 text-xs sm:text-sm font-medium mb-6 backdrop-blur-sm">
+        <span>📍</span>
+        <span>ბალდის საჯარო სკოლა</span>
+      </div>
+
+      <!-- Main Title -->
+      <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight mb-6 font-serif-geo">
+        ეკოკლუბი <span class="text-emerald-300">მოთენა</span>
+      </h1>
+
+      <!-- Authentic Student Welcome Text -->
+      <p class="text-lg sm:text-xl text-stone-200 max-w-2xl mb-10 leading-relaxed font-normal">
+        მოგესალმებით! ეს არის ჩვენი ეკოკლუბის ვებგვერდი. აქ შეგიძლიათ გაიგოთ მეტი ჩვენს საქმიანობაზე, ბალდაზე, მის ისტორიასა და ღირსშესანიშნაობებზე.
+      </p>
+
+      <!-- Two Clean Primary Action Buttons -->
+      <div class="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
+        <a 
+          href="#about" 
+          class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base shadow-sm transition-all duration-200 hover:scale-[1.02] flex items-center justify-center gap-2"
+        >
+          <span>ჩვენ შესახებ</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </a>
+        <a 
+          href="#balda-sights" 
+          class="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-base border border-white/25 backdrop-blur-sm transition-all duration-200 hover:scale-[1.02] flex items-center justify-center gap-2"
+        >
+          <span>ბალდის ღირსშესანიშნაობები</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+          </svg>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== ABOUT US SECTION ==================== -->
+  <section id="about" class="py-20 sm:py-24 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          ბალდის საჯარო სკოლა
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          ჩვენ შესახებ
+        </h2>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+        
+        <!-- Left: Verified Photo of Motena Mountain / Balda -->
+        <div class="lg:col-span-5">
+          <div class="relative rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-700 shadow-sm group">
+            <img 
+              src="https://cdn.georgiantravelguide.com/storage/thumbnails/5d9f3dcdac3e1812030511-3.jpg" 
+              alt="მოთენას მთა და მღვიმე ბალდაში" 
+              class="w-full h-80 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+              onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/5d9f3dcdac3e1812030511-3.jpg', 'მოთენას მთა და მღვიმე', 'მოთენას მთა და კარსტული მღვიმე სოფელ პირველ ბალდაში. კლუბის სახელწოდება სწორედ ამ მთას უკავშირდება.')"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent pointer-events-none"></div>
+            <div class="absolute bottom-4 left-4 right-4 text-white text-xs">
+              <span class="font-semibold block text-sm">მოთენას მთა და მღვიმე</span>
+              <span class="text-stone-300">სოფელი პირველი ბალდა, მარტვილი</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Authentic Student Voice Text -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="p-6 sm:p-8 rounded-3xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/80 dark:border-stone-700">
+            <p class="text-base sm:text-lg text-slate-700 dark:text-stone-200 leading-relaxed font-normal">
+              „მოთენა“ ბალდის საჯარო სკოლის ეკოკლუბია. კლუბის სახელი სოფელ ბალდაში მდებარე მოთენას მთას უკავშირდება. ჩვენი საქმიანობა ძირითადად გარემოს დაცვასა და გეოგრაფიას ეხება. ვგეგმავთ სხვადასხვა აქტივობას, ვზრუნავთ სოფლის სისუფთავეზე და ვცდილობთ, სხვებსაც გავუზიაროთ საინტერესო ინფორმაცია ჩვენი გარემოს შესახებ.
+            </p>
+          </div>
+
+          <!-- Modest Summary Badges -->
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
+            <div class="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-center">
+              <div class="text-emerald-700 dark:text-emerald-400 font-bold text-sm mb-1">🌿 გარემოს დაცვა</div>
+              <p class="text-xs text-slate-500 dark:text-stone-400">სოფლის სისუფთავე</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-center">
+              <div class="text-emerald-700 dark:text-emerald-400 font-bold text-sm mb-1">🗺️ გეოგრაფია</div>
+              <p class="text-xs text-slate-500 dark:text-stone-400">მხარეთმცოდნეობა</p>
+            </div>
+            <div class="p-4 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-center col-span-2 sm:col-span-1">
+              <div class="text-emerald-700 dark:text-emerald-400 font-bold text-sm mb-1">🏫 სასკოლო სივრცე</div>
+              <p class="text-xs text-slate-500 dark:text-stone-400">ბალდის საჯარო სკოლა</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== ACTIVITIES SECTION ==================== -->
+  <section id="activities" class="py-20 sm:py-24 bg-stone-100/70 dark:bg-stone-950 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          რას ვაკეთებთ ეკოკლუბში
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          ჩვენი აქტივობები
+        </h2>
+        <p class="mt-3 text-slate-600 dark:text-stone-300 text-sm sm:text-base">
+          ეკოკლუბ „მოთენას“ მიმდინარე და რეგულარული სასკოლო ინიციატივები:
+        </p>
+      </div>
+
+      <!-- Activities Grid (4 Real Activities) -->
+      <div id="activities-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <!-- 1. Village Cleanup -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col justify-between hover-card-lift">
+          <div>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 flex items-center justify-center font-bold text-base">
+                1
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-stone-100 font-serif-geo">სოფლის დასუფთავება</h3>
+            </div>
+            <p class="text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+              ყოველთვიურად ვაწყობთ დასუფთავების აქციებს და ვასუფთავებთ სოფლის სხვადასხვა ტერიტორიას.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-slate-500 dark:text-stone-400">
+            <span>📅 პერიოდულობა: ყოველთვიური</span>
+            <span class="text-emerald-700 dark:text-emerald-400 font-semibold">სოფელი ბალდა</span>
+          </div>
+        </div>
+
+        <!-- 2. Spreading Information about Plants -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col justify-between hover-card-lift">
+          <div>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-300 flex items-center justify-center font-bold text-base">
+                2
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-stone-100 font-serif-geo">მცენარეების შესახებ ინფორმაციის გავრცელება</h3>
+            </div>
+            <p class="text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+              ვამზადებთ საინფორმაციო ბარათებს ადგილობრივ შხამიან და ტოქსიკურ მცენარეებზე.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-slate-500 dark:text-stone-400">
+            <span>🌿 ბოტანიკური კვლევა</span>
+            <span class="text-teal-700 dark:text-teal-400 font-semibold">საინფორმაციო ბარათები</span>
+          </div>
+        </div>
+
+        <!-- 3. Geography Zone -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col justify-between hover-card-lift">
+          <div>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 flex items-center justify-center font-bold text-base">
+                3
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-stone-100 font-serif-geo">გეოგრაფიული ზოლი</h3>
+            </div>
+            <p class="text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+              სკოლაში ვათავსებთ საინტერესო გეოგრაფიულ ინფორმაციას და მოსწავლეებს ვაცნობთ სხვადასხვა თემას.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-slate-500 dark:text-stone-400">
+            <span>🗺️ სასკოლო კედლის გაზეთი & კუთხე</span>
+            <span class="text-blue-700 dark:text-blue-400 font-semibold">საინფორმაციო სტენდი</span>
+          </div>
+        </div>
+
+        <!-- 4. Important Dates -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl p-6 sm:p-7 border border-stone-200 dark:border-stone-800 shadow-sm flex flex-col justify-between hover-card-lift">
+          <div>
+            <div class="flex items-center gap-3 mb-3">
+              <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 flex items-center justify-center font-bold text-base">
+                4
+              </div>
+              <h3 class="text-xl font-bold text-slate-900 dark:text-stone-100 font-serif-geo">მნიშვნელოვანი თარიღები</h3>
+            </div>
+            <p class="text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+              აღვნიშნავთ გარემოს დაცვისა და გეოგრაფიის მნიშვნელოვან დღეებს.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between text-xs text-slate-500 dark:text-stone-400">
+            <span>📌 თემატური ღონისძიებები</span>
+            <span class="text-amber-700 dark:text-amber-400 font-semibold">ეკო-კალენდარი</span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== BALDA HISTORY SECTION ==================== -->
+  <section id="balda-history" class="py-20 sm:py-24 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-14">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-stone-700 dark:text-stone-300 bg-stone-100 dark:bg-stone-800 px-3.5 py-1.5 rounded-full border border-stone-200 dark:border-stone-700 mb-3">
+          ისტორიული მეხსიერება & ხალხური გადმოცემა
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          ბალდის ისტორია და ლეგენდა
+        </h2>
+        <p class="mt-3 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          სოფლის სახელწოდების წარმოშობის ხალხური თქმულება, ღვთისმშობლის ხატი და მდინარე აბაშისპირა საუკუნოვანი მონასტერი.
+        </p>
+
+        <!-- Explicit Legend Disclaimer -->
+        <div class="mt-6 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-amber-900 dark:text-amber-200 text-xs sm:text-sm text-left shadow-sm">
+          <strong>⚠️ შენიშვნა:</strong> ქვემოთ მოყვანილი ამბავი წარმოადგენს თაობიდან თაობაზე ზეპირად გადაცემულ <strong>ხალხურ გადმოცემას (ლეგენდას)</strong> და არა მეცნიერულად დადასტურებულ ისტორიულ ფაქტს.
+        </div>
+      </div>
+
+      <!-- History Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        
+        <!-- Left: Legend & Oral History -->
+        <div class="lg:col-span-7 space-y-6">
+          <div class="p-6 sm:p-8 rounded-3xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/90 dark:border-stone-700 shadow-sm">
+            <h3 class="text-xl font-bold font-serif-geo text-slate-900 dark:text-stone-100 mb-3">
+              ლეგენდა ეკალ-ბარდებსა და ხატზე
+            </h3>
+            
+            <div id="balda-history-text" class="space-y-4 text-slate-700 dark:text-stone-200 text-sm sm:text-base leading-relaxed">
+              <p>
+                გადმოცემის თანახმად, მღვდელმთავარ ხურცილავას სურდა, სასენაკო თავის სახლთან ახლოს ყოფილიყო. ამისთვის მან ხალხის რწმენა გამოიყენა: ღამით გამოიტანა ღვთისმშობლის ხატი და ეკალ-ბარდებში გადამალა.
+              </p>
+              <p>
+                მეორე დღეს მღვდელმთავარმა მრევლს გამოუცხადა, რომ ხატი გაუჩინარდა. როდესაც ძებნა დაიწყეს, იგი სწორედ იმ ეკალ-ბარდებში აღმოაჩინეს, სადაც მანამდე გადამალეს. ხალხმა ეს სასწაულად მიიჩნია და გადაწყვიტა, რომ ხატმა თვითონ აირჩია ეს ადგილი. სწორედ აქ აშენდა ახალი ტაძარი.
+              </p>
+              <p>
+                ხალხური ეტიმოლოგიით, სიტყვებისგან — „ბალი“ (ალუბალი/ხილი) ან „ბარდი“ (ეკალ-ბარდი) — თითქოსდა წარმოიშვა სოფლის სახელწოდება „ბალდა“. თუმცა, ისტორიულად და ენათმეცნიერულად ეს მშვენიერი ხალხური თქმულებაა, რომელიც სოფლის ფოლკლორულ მეხსიერებას ამდიდრებს.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Real Historical Monastery Card -->
+        <div class="lg:col-span-5 space-y-4">
+          <div class="relative rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-700 shadow-sm group">
+            <img 
+              src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990214-2-2.jpg" 
+              alt="ბალდის ღვთისმშობლის მიძინების ეკლესია და მონასტერი" 
+              class="w-full h-72 sm:h-80 object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+              onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990214-2-2.jpg', 'ბალდის ღვთისმშობლის მიძინების ეკლესია', 'XIII-XIV სს. ისტორიული ტაძარი და მონასტერი სოფელ პირველ ბალდაში.')"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-stone-950/85 via-transparent to-transparent pointer-events-none"></div>
+
+            <div class="absolute bottom-4 left-4 right-4 text-white">
+              <a 
+                href="https://georgiantravelguide.com/ka/baldis-monasteri" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                class="text-[10px] text-emerald-300 hover:text-white uppercase tracking-wider font-semibold block mb-1 underline"
+              >
+                📷 წყარო: Georgian Travel Guide
+              </a>
+              <h4 class="text-lg font-bold font-serif-geo leading-snug">
+                ბალდის ღვთისმშობლის მიძინების ეკლესია
+              </h4>
+              <p class="text-stone-300 text-xs mt-1">
+                მდებარეობს სოფელ პირველ ბალდაში, მდინარე აბაშის მარცხენა ნაპირას.
+              </p>
+              
+              <div class="mt-3 pt-2 border-t border-stone-700/80 flex items-center justify-between">
+                <button 
+                  onclick="focusLandmarkOnMap(42.4820, 42.4085, 'lm-1')"
+                  class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold transition"
+                >
+                  რუკაზე ნახვა 📍
+                </button>
+                <button 
+                  onclick="openLandmarkModal('lm-1')"
+                  class="px-3 py-1.5 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-semibold backdrop-blur-sm transition"
+                >
+                  დეტალურად →
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-5 rounded-2xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200/90 dark:border-stone-700 text-xs sm:text-sm text-slate-600 dark:text-stone-300">
+            <span class="font-bold text-slate-800 dark:text-stone-100">საზაფხულო რეზიდენცია:</span> ბალდის მონასტერი და მის სიახლოვეს მდებარე ბაღი წარმოადგენდა დადიანებისა და ჭყონდიდელ მიტროპოლიტთა საზაფხულო დასასვენებელ სავანეს.
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== BALDA SIGHTS SECTION ==================== -->
+  <section id="balda-sights" class="py-20 sm:py-24 bg-stone-50/70 dark:bg-stone-950 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-12">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-3.5 py-1.5 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          ბუნებრივი და კულტურული მემკვიდრეობა
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          ბალდის ღირსშესანიშნაობები
+        </h2>
+        <p class="mt-3 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          ბალდისა და მისი მიდამოების უნიკალური გეოგრაფიული და ისტორიული საგანძური.
+        </p>
+
+        <!-- Location Clarification Note -->
+        <div class="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white dark:bg-stone-800 border border-stone-200 dark:border-stone-700 text-xs text-slate-600 dark:text-stone-300 text-center">
+          <span>📍</span>
+          <span><strong>ლოკაციის სიზუსტე:</strong> კანიონი, მონასტერი, მოთენასა და ჯორწყუს მღვიმეები მდებარეობს სოფელ ბალდაში (პირველ და მეორე ბალდაში); ტობის, ონიორესა და არსენ ოქროჯანაშვილის ბუნების ძეგლები — ასხის მასივზე, ხოლო მარტვილის კანიონი — მუნიციპალიტეტის ცენტრთან.</span>
+        </div>
+      </div>
+
+      <!-- Sights Grid (9 Real Landmarks) -->
+      <div id="landmarks-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+        
+        <!-- 1. Balda Monastery -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990214-2-2.jpg" 
+                alt="ბალდის მონასტერი" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990214-2-2.jpg', 'ბალდის მონასტერი', 'XIII-XIV სს. ისტორიული მონასტერი სოფელ პირველ ბალდაში.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">კულტურული ძეგლი</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">სოფელი პირველი ბალდა</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">ბალდის მონასტერი</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                ღვთისმშობლის მიძინებისა და წმინდა ანტონ ჭყონდიდელის მონასტერი. მდებარეობს მდინარე აბაშის მარცხენა ნაპირას.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-1')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.4820, 42.4085, 'lm-1')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Motena Cave -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/5d9f3dcdac3e1812030511-3.jpg" 
+                alt="მოთენას მღვიმე" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/5d9f3dcdac3e1812030511-3.jpg', 'მოთენას მღვიმე', 'ბუნების ძეგლი სოფელ პირველ ბალდაში, მოთენას მთის ძირას.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • მღვიმე</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">სოფელი პირველი ბალდა</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">მოთენას მღვიმე</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                კარსტული მღვიმე მოთენას მთის ძირას, საერთო სიგრძით 75 მეტრი. გამორჩეულია სტალაქტიტებითა და ისტორიული თავდაცვითი კედლით.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-2')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.4782, 42.4102, 'lm-2')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Balda Canyon -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-550219-2-2.jpg" 
+                alt="ბალდის კანიონი" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-550219-2-2.jpg', 'ბალდის კანიონი', 'ბუნების ძეგლი მდინარე აბაშის ხეობაში, სოფელ მეორე ბალდაში.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • კანიონი</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">სოფელი მეორე ბალდა</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">ბალდის კანიონი</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                მდინარე აბაშის მიერ კირქვულ ქანებში გამოკვეთილი კანიონი (სიგრძე 1400 მ, სიღრმე 25-30 მ) ზურმუხტისფერი მორევებით.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-3')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.4842, 42.4150, 'lm-3')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Kaghu Waterfall -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/img-3307-2.jpg" 
+                alt="კაგუს ჩანჩქერი" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/img-3307-2.jpg', 'კაგუს ჩანჩქერი', 'ულამაზესი ჩანჩქერი ბალდის მახლობლად, მდინარე აბაშის ხეობაში.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ჩანჩქერი</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">მეორე ბალდის მიდამოები</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">კაგუს ჩანჩქერი</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                კირქვულ კლდეზე გადმოღვრილი ჩანჩქერი მდინარე აბაშის ხეობაში, მდიდარი ხავსებითა და კოლხური ტყით.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-4')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.4925, 42.4278, 'lm-4')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. Toba Waterfall & Cave -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-110203-2-2.jpg" 
+                alt="ტობას ჩანჩქერი" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-110203-2-2.jpg', 'ტობას ჩანჩქერი და მღვიმე', 'საქართველოს ერთ-ერთი უმაღლესი ჩანჩქერი (234 მ) ასხის მასივზე.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • ჩანჩქერი</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">ასხის მასივი</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">ტობას ჩანჩქერი და მღვიმე</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                საქართველოს უმაღლესი კასკადური ჩანჩქერი (234 მ), რომელიც გამოედინება არსენ ოქროჯანაშვილის მღვიმიდან.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-5')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.5350, 42.4630, 'lm-5')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 6. Oniore Waterfall -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990186-6-2.jpg" 
+                alt="ონიორეს ჩანჩქერი" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990186-6-2.jpg', 'ონიორეს ჩანჩქერი და მღვიმე', 'ბუნების ძეგლი მდინარე აბაშის სათავეში, ასხის კირქვულ მასივზე.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • ჩანჩქერი</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">მდ. აბაშის სათავე</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">ონიორეს ჩანჩქერი და მღვიმე</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                67 მეტრის სიმაღლის ჩანჩქერი, რომელიც მიწისქვეშა მდინარე ტობადან გამოედინება და მდინარე აბაშის ერთ-ერთ სათავეს ქმნის.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-6')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.5280, 42.4480, 'lm-6')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 7. Jortsku Cave -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://nationalparks.ge/files/15421978812546198617_272058980119991_8784878364381937664_n.jpg" 
+                alt="ჯორწყუს მღვიმე" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://nationalparks.ge/files/15421978812546198617_272058980119991_8784878364381937664_n.jpg', 'ჯორწყუს მღვიმის ბუნების ძეგლი', 'დაცული ტერიტორია სოფელ მეორე ბალდაში, მდინარე ჯორწყუს ხეობაში.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • მღვიმე</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">სოფელი მეორე ბალდა</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">ჯორწყუს მღვიმე</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                ორსართულიანი კარსტული მღვიმე მდინარე ჯორწყუს ხეობაში. ცნობილია მღვიმური დათვის ძვლებითა და ნაღვენთი ფორმებით.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-7')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.5103, 42.4192, 'lm-7')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 8. Arsen Okrojanashvili Cave (Toba II) -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://nationalparks.ge/files/15421977196646347675_169939460628097_1305285409302904832_n.png" 
+                alt="არსენ ოქროჯანაშვილის მღვიმე" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://nationalparks.ge/files/15421977196646347675_169939460628097_1305285409302904832_n.png', 'არსენ ოქროჯანაშვილის მღვიმე (ტობა II)', 'საქართველოს ერთ-ერთი ყველაზე შთამბეჭდავი მიწისქვეშა კარსტული სისტემა ასხის მასივზე.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • მღვიმე</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">ასხის მასივი</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">არსენ ოქროჯანაშვილის მღვიმე</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                ტობა II — 1150 მეტრის სიგრძის ექსტრემალური კარსტული მღვიმე მიწისქვეშა მდინარით, ტბებითა და გიგანტური სტალაქტიტებით.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-8')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.4719, 42.4553, 'lm-8')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+        <!-- 9. Martvili Canyon -->
+        <div class="bg-white dark:bg-stone-900 rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift flex flex-col justify-between group">
+          <div>
+            <div class="relative h-56 overflow-hidden bg-stone-900">
+              <img 
+                src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-0294-2-2.jpg" 
+                alt="მარტვილის კანიონი" 
+                class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer"
+                onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-0294-2-2.jpg', 'მარტვილის კანიონის ბუნების ძეგლი', 'გოჭკადილის კანიონი მდინარე აბაშაზე, მარტვილის მუნიციპალიტეტში.')"
+                loading="lazy"
+              />
+              <div class="absolute inset-0 bg-gradient-to-t from-stone-950/80 via-transparent to-transparent opacity-60 pointer-events-none"></div>
+              <div class="absolute top-3 left-3">
+                <span class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold">ბუნების ძეგლი • კანიონი</span>
+              </div>
+              <div class="absolute bottom-2 left-3 text-xs text-white">სოფელი გაჭედილი / მარტვილი</div>
+            </div>
+            <div class="p-5">
+              <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">მარტვილის კანიონი</h3>
+              <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed line-clamp-3">
+                მდინარე აბაშის კირქვული კანიონი (სიგრძე 2400 მ, ჩაჭრის სიღრმე 20-40 მ), ნავებით სასეირნო წრიული ბილიკითა და კასკადებით.
+              </p>
+            </div>
+          </div>
+          <div class="p-5 pt-0 flex items-center justify-between gap-2 border-t border-stone-100 dark:border-stone-800 mt-2">
+            <button onclick="openLandmarkModal('lm-9')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-slate-800 dark:text-stone-200 text-xs font-semibold transition min-h-[40px]">
+              დეტალურად
+            </button>
+            <button onclick="focusLandmarkOnMap(42.4574, 42.3781, 'lm-9')" class="px-3.5 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-emerald-50 dark:hover:bg-stone-700 text-emerald-700 dark:text-emerald-400 text-xs font-semibold transition min-h-[40px]" title="რუკაზე ჩვენება">
+              რუკა 📍
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== INTERACTIVE MAP SECTION ==================== -->
+  <section id="balda-map-section" class="py-20 sm:py-24 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-3xl mx-auto mb-10">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          გეოგრაფიული ლოკაციები
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          ინტერაქტიული რუკა
+        </h2>
+        <p class="mt-3 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          გაეცანით ბალდის, ასხის მასივისა და მარტვილის ღირსშესანიშნაობების ზუსტ გეოგრაფიულ კოორდინატებს.
+        </p>
+
+        <!-- Category Filter Buttons -->
+        <div class="flex items-center justify-center gap-2 flex-wrap mt-6">
+          <button onclick="filterMapCategory('all', event)" class="map-filter-btn px-4 py-1.5 rounded-full text-xs font-bold transition bg-emerald-700 text-white shadow-sm">
+            ყველა (9)
+          </button>
+          <button onclick="filterMapCategory('canyon', event)" class="map-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold transition bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">
+            კანიონები
+          </button>
+          <button onclick="filterMapCategory('cave', event)" class="map-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold transition bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">
+            მღვიმეები
+          </button>
+          <button onclick="filterMapCategory('waterfall', event)" class="map-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold transition bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">
+            ჩანჩქერები
+          </button>
+          <button onclick="filterMapCategory('cultural', event)" class="map-filter-btn px-4 py-1.5 rounded-full text-xs font-semibold transition bg-stone-100 dark:bg-stone-800 text-slate-700 dark:text-stone-300 hover:bg-stone-200 dark:hover:bg-stone-700">
+            კულტურული
+          </button>
+        </div>
+      </div>
+
+      <!-- Leaflet Map Container -->
+      <div class="relative rounded-3xl overflow-hidden border border-stone-200 dark:border-stone-700 shadow-sm bg-stone-100 dark:bg-stone-800">
+        <div id="balda-map-container" class="w-full"></div>
+      </div>
+
+      <!-- Map Legend Notice -->
+      <div class="mt-4 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 dark:text-stone-400 gap-2 px-2">
+        <span>📍 დააჭირეთ მარკერს დეტალური აღწერისა და ფოტოს სანახავად</span>
+        <span>რუკის მონაცემები: OpenStreetMap კონტრიბუტორები</span>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== GEOGRAPHY ZONE SECTION ==================== -->
+  <section id="geography" class="py-20 sm:py-24 bg-stone-100/70 dark:bg-stone-950 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          სასკოლო კუთხე
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          გეოგრაფიული ზოლი
+        </h2>
+        <p class="mt-4 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          „გეოგრაფიულ ზოლში“ ვაგროვებთ საინტერესო ინფორმაციას გეოგრაფიის შესახებ და ვუზიარებთ სკოლის მოსწავლეებს. აქ პერიოდულად დაემატება ახალი ფაქტები და თემები.
+        </p>
+      </div>
+
+      <!-- Geography Facts Grid -->
+      <div id="geography-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <div class="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift">
+          <div class="text-2xl mb-3">🏔️</div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">ასხის კირქვული მასივი</h3>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed">
+            ასხის პლატო კავკასიის ერთ-ერთი ყველაზე მდიდარი კარსტული რეგიონია, სადაც ასობით ძაბრი, მღვიმე და მიწისქვეშა მდინარე იყრის თავს.
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift">
+          <div class="text-2xl mb-3">💧</div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">მდინარე აბაშის ხეობა</h3>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed">
+            მდინარე აბაშა სათავეს ასხის მასივზე იღებს. მისი ხეობა გამოირჩევა ღრმა კანიონებით, მორევებითა და კრისტალურად სუფთა წყლით.
+          </p>
+        </div>
+
+        <div class="bg-white dark:bg-stone-900 rounded-2xl p-6 border border-stone-200 dark:border-stone-800 shadow-sm hover-card-lift">
+          <div class="text-2xl mb-3">🦇</div>
+          <h3 class="text-base font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">მღვიმური ეკოსისტემები</h3>
+          <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed">
+            მოთენას, ჯორწყუსა და ტობას მღვიმეებში ბინადრობენ ღამურების იშვიათი კოლონიები და ენდემური უსინათლო უხერხემლოები.
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== PROJECTS SECTION ==================== -->
+  <section id="projects" class="py-20 sm:py-24 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          ინიციატივები
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          პროექტები
+        </h2>
+        <p class="mt-4 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          აქ განთავსდება ჩვენი ეკოკლუბის პროექტები და ინიციატივები. ინფორმაციას ეტაპობრივად დავამატებთ.
+        </p>
+      </div>
+
+      <!-- Projects Container -->
+      <div id="projects-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        <div class="p-6 sm:p-7 rounded-3xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 shadow-sm flex flex-col justify-between hover-card-lift">
+          <div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300">მიმდინარე</span>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mt-3 mb-2">სუფთა სოფელი — სუფთა მომავალი</h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed">
+              სოფელ ბალდის მდინარისპირა და ტურისტული ბილიკების რეგულარული დასუფთავება და ნარჩენების შეგროვება მოსწავლეთა ჩართულობით.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-200 dark:border-stone-700 text-xs text-slate-500 dark:text-stone-400">
+            სტატუსი: აქტიური ინიციატივა
+          </div>
+        </div>
+
+        <div class="p-6 sm:p-7 rounded-3xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 shadow-sm flex flex-col justify-between hover-card-lift">
+          <div>
+            <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-300">დაგეგმილი</span>
+            <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo mt-3 mb-2">ბალდის მცენარეთა საინფორმაციო ბარათები</h3>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-stone-300 leading-relaxed">
+              ადგილობრივი მცენარეების, მათ შორის შხამიანი და სამკურნალო სახეობების კატალოგიზაცია და საინფორმაციო ბროშურების მომზადება.
+            </p>
+          </div>
+          <div class="mt-4 pt-3 border-t border-stone-200 dark:border-stone-700 text-xs text-slate-500 dark:text-stone-400">
+            სტატუსი: მომზადების პროცესში
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== PHOTO GALLERY SECTION ==================== -->
+  <section id="gallery" class="py-20 sm:py-24 bg-stone-100/70 dark:bg-stone-950 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-12">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          ფოტოები
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          გალერეა
+        </h2>
+        <p class="mt-3 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          ჩვენი აქტივობების ფოტოები.
+        </p>
+      </div>
+
+      <!-- Gallery Grid -->
+      <div id="gallery-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        
+        <!-- Photo 1: Balda Monastery -->
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer border border-stone-200 dark:border-stone-800 shadow-sm" onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990214-2-2.jpg', 'ბალდის მონასტერი', 'XIII-XIV სს. ისტორიული ტაძარი სოფელ პირველ ბალდაში.')">
+          <img src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990214-2-2.jpg" alt="ბალდის მონასტერი" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 group-hover:bg-transparent transition-colors"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold drop-shadow">ბალდის მონასტერი</div>
+        </div>
+
+        <!-- Photo 2: Balda Canyon -->
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer border border-stone-200 dark:border-stone-800 shadow-sm" onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-550219-2-2.jpg', 'ბალდის კანიონი', 'მდინარე აბაშის კანიონი მეორე ბალდაში.')">
+          <img src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-550219-2-2.jpg" alt="ბალდის კანიონი" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 group-hover:bg-transparent transition-colors"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold drop-shadow">ბალდის კანიონი</div>
+        </div>
+
+        <!-- Photo 3: Motena Cave -->
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer border border-stone-200 dark:border-stone-800 shadow-sm" onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/5d9f3dcdac3e1812030511-3.jpg', 'მოთენას მღვიმე და მთა', 'მოთენას მთა ბალდაში.')">
+          <img src="https://cdn.georgiantravelguide.com/storage/thumbnails/5d9f3dcdac3e1812030511-3.jpg" alt="მოთენას მღვიმე" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 group-hover:bg-transparent transition-colors"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold drop-shadow">მოთენას მთა და მღვიმე</div>
+        </div>
+
+        <!-- Photo 4: Kaghu Waterfall -->
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer border border-stone-200 dark:border-stone-800 shadow-sm" onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/img-3307-2.jpg', 'კაგუს ჩანჩქერი', 'ჩანჩქერი მდინარე აბაშის ხეობაში.')">
+          <img src="https://cdn.georgiantravelguide.com/storage/thumbnails/img-3307-2.jpg" alt="კაგუს ჩანჩქერი" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 group-hover:bg-transparent transition-colors"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold drop-shadow">კაგუს ჩანჩქერი</div>
+        </div>
+
+        <!-- Photo 5: Toba Waterfall -->
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer border border-stone-200 dark:border-stone-800 shadow-sm" onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-110203-2-2.jpg', 'ტობას ჩანჩქერი', 'კასკადური ჩანჩქერი ასხის მასივზე.')">
+          <img src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-110203-2-2.jpg" alt="ტობას ჩანჩქერი" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 group-hover:bg-transparent transition-colors"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold drop-shadow">ტობას ჩანჩქერი (234 მ)</div>
+        </div>
+
+        <!-- Photo 6: Oniore Waterfall -->
+        <div class="relative rounded-2xl overflow-hidden group cursor-pointer border border-stone-200 dark:border-stone-800 shadow-sm" onclick="openLightbox('https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990186-6-2.jpg', 'ონიორეს ჩანჩქერი', 'ონიორეს ჩანჩქერი და მღვიმე.')">
+          <img src="https://cdn.georgiantravelguide.com/storage/thumbnails/dji-990186-6-2.jpg" alt="ონიორეს ჩანჩქერი" class="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-500" loading="lazy" />
+          <div class="absolute inset-0 bg-stone-950/30 group-hover:bg-transparent transition-colors"></div>
+          <div class="absolute bottom-3 left-3 right-3 text-white text-xs font-semibold drop-shadow">ონიორეს ჩანჩქერი (67 მ)</div>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== CONTACT SECTION ==================== -->
+  <section id="contact" class="py-20 sm:py-24 bg-white dark:bg-stone-900 border-b border-stone-200/80 dark:border-stone-800 transition-colors">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <!-- Section Header -->
+      <div class="text-center max-w-2xl mx-auto mb-14">
+        <span class="inline-block text-xs uppercase tracking-wider font-bold text-emerald-800 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-1 rounded-full border border-emerald-200 dark:border-emerald-800 mb-3">
+          დაგვიკავშირდით
+        </span>
+        <h2 class="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-stone-100 tracking-tight font-serif-geo">
+          კონტაქტი
+        </h2>
+        <p class="mt-4 text-slate-600 dark:text-stone-300 text-sm sm:text-base leading-relaxed">
+          თუ გაინტერესებთ ჩვენი საქმიანობა ან გსურთ ეკოკლუბთან დაკავშირება, დაგვიკავშირდით.
+        </p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        
+        <!-- Left: Direct Contact Information -->
+        <div class="lg:col-span-5 bg-stone-50 dark:bg-stone-800/60 rounded-3xl p-7 sm:p-8 border border-stone-200 dark:border-stone-700 shadow-sm flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-3 mb-6">
+              <div class="w-11 h-11 rounded-2xl bg-emerald-700 text-white flex items-center justify-center font-serif-geo font-bold text-lg">
+                მ
+              </div>
+              <div>
+                <h3 class="text-lg font-bold text-slate-900 dark:text-stone-100 font-serif-geo">ეკოკლუბი „მოთენა“</h3>
+                <p class="text-xs text-slate-500 dark:text-stone-400">ბალდის საჯარო სკოლა</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-xs sm:text-sm">
+              <div class="flex items-start gap-3">
+                <span class="text-lg">📍</span>
+                <div>
+                  <div class="font-bold text-slate-800 dark:text-stone-200">მისამართი</div>
+                  <div class="text-slate-600 dark:text-stone-400">საქართველო, მარტვილის მუნიციპალიტეტი, სოფელი ბალდა</div>
+                  <div class="text-xs text-slate-400 dark:text-stone-500">ბალდის საჯარო სკოლის შენობა</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span class="text-lg">✉️</span>
+                <div>
+                  <div class="font-bold text-slate-800 dark:text-stone-200">ელ-ფოსტა</div>
+                  <div class="text-slate-600 dark:text-stone-400">ecoclub.motena.balda@gmail.com</div>
+                </div>
+              </div>
+
+              <div class="flex items-start gap-3">
+                <span class="text-lg">🏫</span>
+                <div>
+                  <div class="font-bold text-slate-800 dark:text-stone-200">სკოლა</div>
+                  <div class="text-slate-600 dark:text-stone-400">ბალდის საჯარო სკოლა</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-8 pt-4 border-t border-stone-200 dark:border-stone-700 text-xs text-slate-500 dark:text-stone-400">
+            ეკოკლუბის შეხვედრები იმართება ყოველ პარასკევს სკოლის სივრცეში.
+          </div>
+        </div>
+
+        <!-- Right: Clean Contact Form -->
+        <div class="lg:col-span-7 bg-white dark:bg-stone-900 rounded-3xl p-7 sm:p-8 border border-stone-200 dark:border-stone-800 shadow-sm">
+          <h3 class="text-xl font-bold text-slate-900 dark:text-stone-100 font-serif-geo mb-2">მოგვწერეთ შეტყობინება</h3>
+          <p class="text-slate-600 dark:text-stone-300 text-xs sm:text-sm mb-6">
+            გაქვთ შეკითხვა ან გსურთ ეკოკლუბთან თანამშრომლობა? შეავსეთ ფორმა და ჩვენი გუნდი დაგიკავშირდებათ.
+          </p>
+
+          <form id="contact-form" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-stone-300 mb-1">თქვენი სახელი და გვარი</label>
+                <input 
+                  type="text" 
+                  placeholder="მაგ: გიორგი ბერიძე" 
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-800 text-slate-800 dark:text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-700 dark:text-stone-300 mb-1">საკონტაქტო ელ-ფოსტა</label>
+                <input 
+                  type="email" 
+                  placeholder="name@example.com" 
+                  required
+                  class="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-800 text-slate-800 dark:text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-stone-300 mb-1">თემა / მიმართულება</label>
+              <select class="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-800 text-slate-800 dark:text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600">
+                <option>ეკოკლუბში გაწევრიანება</option>
+                <option>სოფლის დასუფთავების აქციაში მონაწილეობა</option>
+                <option>გეოგრაფიული მასალის გაზიარება</option>
+                <option>სხვა შეკითხვა</option>
+              </select>
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 dark:text-stone-300 mb-1">შეტყობინების ტექსტი</label>
+              <textarea 
+                rows="4" 
+                placeholder="დაწერეთ თქვენი შეტყობინება აქ..." 
+                required
+                class="w-full px-4 py-2.5 rounded-xl border border-stone-200 dark:border-stone-700 bg-stone-50/70 dark:bg-stone-800 text-slate-800 dark:text-stone-100 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+              ></textarea>
+            </div>
+
+            <button 
+              type="submit" 
+              class="w-full sm:w-auto px-7 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-sm shadow-sm transition-all duration-200 hover:scale-[1.02] flex items-center justify-center gap-2"
+            >
+              <span>შეტყობინების გაგზავნა</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="bg-stone-900 text-stone-300 pt-14 pb-10 border-t border-stone-800 mt-auto">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 pb-10 border-b border-stone-800">
+        
+        <!-- Brand & School -->
+        <div class="lg:col-span-5 space-y-3">
+          <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-700 flex items-center justify-center text-white font-serif-geo font-bold">
+              მ
+            </div>
+            <div>
+              <span class="text-xl font-bold text-white tracking-tight font-serif-geo">მოთენა</span>
+              <p class="text-xs text-stone-400 font-medium">ეკოკლუბი • ბალდის საჯარო სკოლა</p>
+            </div>
+          </div>
+          <p class="text-xs sm:text-sm text-stone-400 max-w-sm leading-relaxed">
+            ბალდის საჯარო სკოლის ეკოკლუბის ვებგვერდი. ჩვენი მიზანია მშობლიური ბუნების მოვლა, სისუფთავე და გეოგრაფიული ცოდნის გაზიარება.
+          </p>
+          <div class="text-xs text-stone-400">
+            📍 სოფელი ბალდა, მარტვილის მუნიციპალიტეტი, საქართველო
+          </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="lg:col-span-4 space-y-2">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2">ნავიგაცია</h4>
+          <ul class="grid grid-cols-2 gap-2 text-xs text-stone-400">
+            <li><a href="#top" class="hover:text-emerald-400 transition">მთავარი</a></li>
+            <li><a href="#about" class="hover:text-emerald-400 transition">ჩვენ შესახებ</a></li>
+            <li><a href="#activities" class="hover:text-emerald-400 transition">აქტივობები</a></li>
+            <li><a href="#balda-history" class="hover:text-emerald-400 transition">ბალდის ისტორია</a></li>
+            <li><a href="#balda-sights" class="hover:text-emerald-400 transition">ღირსშესანიშნაობები</a></li>
+            <li><a href="#balda-map-section" class="hover:text-emerald-400 transition">რუკა</a></li>
+            <li><a href="#gallery" class="hover:text-emerald-400 transition">გალერეა</a></li>
+            <li><a href="#contact" class="hover:text-emerald-400 transition">კონტაქტი</a></li>
+          </ul>
+        </div>
+
+        <!-- Admin & Student Resources -->
+        <div class="lg:col-span-3 space-y-2">
+          <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-2">სისტემა</h4>
+          <ul class="space-y-1.5 text-xs text-stone-400">
+            <li><a href="admin.html" class="hover:text-emerald-400 transition flex items-center gap-1.5"><span>🔐</span> ადმინისტრატორის პანელი</a></li>
+            <li><a href="#balda-sights" class="hover:text-emerald-400 transition">ბუნების ძეგლების კატალოგი</a></li>
+            <li><a href="#geography" class="hover:text-emerald-400 transition">გეოგრაფიული ფაქტები</a></li>
+          </ul>
+        </div>
+
+      </div>
+
+      <!-- Copyright Notice -->
+      <div class="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-400 gap-3">
+        <p>© 2026 ეკოკლუბი „მოთენა“ • ბალდის საჯარო სკოლა. ყველა უფლება დაცულია.</p>
+        <p class="text-stone-400">ფოტოები: Georgian Travel Guide & დაცული ტერიტორიების სააგენტო (APA)</p>
+      </div>
+
+    </div>
+  </footer>
+
+
+  <!-- ==================== LANDMARK DETAIL MODAL ==================== -->
+  <div id="landmark-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden items-center justify-center p-4">
+    <!-- Backdrop Close Handler -->
+    <div onclick="closeLandmarkModal()" class="absolute inset-0 cursor-default" aria-label="დახურვა"></div>
+    
+    <div class="relative max-w-2xl w-full bg-white dark:bg-stone-900 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh] animate-fade-in-up border border-stone-200 dark:border-stone-800">
+      
+      <!-- Modal Header / Image Area -->
+      <div class="relative h-64 sm:h-72 bg-stone-900 overflow-hidden flex-shrink-0">
+        <img id="lm-modal-img" src="" alt="" class="w-full h-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-stone-950/85 via-transparent to-transparent pointer-events-none"></div>
+        
+        <!-- Close Button -->
+        <button onclick="closeLandmarkModal()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center text-sm font-bold transition shadow-md" aria-label="დახურვა">
+          ✕
+        </button>
+
+        <div class="absolute bottom-4 left-5 right-5 text-white">
+          <span id="lm-modal-badge" class="px-2.5 py-1 rounded-full bg-emerald-700 text-white text-[11px] font-semibold mb-2 inline-block shadow"></span>
+          <h3 id="lm-modal-title" class="text-2xl font-bold font-serif-geo drop-shadow leading-tight"></h3>
+          <p id="lm-modal-subtitle" class="text-xs text-stone-300 mt-1"></p>
+        </div>
+      </div>
+
+      <!-- Modal Body (Scrollable) -->
+      <div class="p-6 overflow-y-auto space-y-4">
+        <div id="lm-modal-content" class="text-slate-700 dark:text-stone-200 text-sm sm:text-base leading-relaxed space-y-3">
+          <!-- Text Injected via script.js -->
+        </div>
+
+        <!-- Coordinates & Details Badges -->
+        <div id="lm-modal-extra" class="pt-3 border-t border-stone-100 dark:border-stone-800 space-y-2 text-xs text-slate-500 dark:text-stone-400">
+          <!-- Injected via script.js -->
+        </div>
+
+        <div class="pt-4 border-t border-stone-100 dark:border-stone-800 flex items-center justify-between gap-3">
+          <button id="lm-modal-map-btn" class="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white font-bold text-xs shadow flex items-center gap-1.5 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>რუკაზე ნახვა 📍</span>
+          </button>
+          <button onclick="closeLandmarkModal()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-slate-700 dark:text-stone-300 font-bold text-xs transition">
+            დახურვა
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== DYNAMIC INTERACTIVE LIGHTBOX MODAL ==================== -->
+  <div id="dynamic-lightbox" class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md hidden items-center justify-center p-4">
+    <!-- Backdrop Click Close -->
+    <div onclick="closeLightbox()" class="absolute inset-0 cursor-default" aria-label="დახურვა"></div>
+    
+    <div class="relative max-w-4xl w-full bg-white dark:bg-stone-900 rounded-3xl overflow-hidden shadow-2xl z-10 flex flex-col animate-fade-in-up border border-stone-200 dark:border-stone-800">
+      <!-- Media Area -->
+      <div class="relative bg-stone-950 flex items-center justify-center min-h-[40vh] max-h-[70vh]">
+        <img id="lightbox-img" src="" alt="" class="max-h-[70vh] w-auto max-w-full object-contain">
+        
+        <!-- Close Button -->
+        <button onclick="closeLightbox()" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center text-sm font-bold transition shadow-md" aria-label="დახურვა">
+          ✕
+        </button>
+
+        <!-- Prev / Next Navigation Buttons -->
+        <div id="lightbox-nav-buttons" class="hidden">
+          <button onclick="prevGalleryPhoto()" class="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center text-xl transition" aria-label="წინა">
+            ‹
+          </button>
+          <button onclick="nextGalleryPhoto()" class="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center text-xl transition" aria-label="შემდეგი">
+            ›
+          </button>
+        </div>
+      </div>
+
+      <!-- Description Area -->
+      <div class="p-5 bg-white dark:bg-stone-900 flex items-start justify-between gap-4">
+        <div>
+          <span id="lightbox-counter" class="text-xs uppercase font-bold text-emerald-700 dark:text-emerald-400 tracking-wider"></span>
+          <h3 id="lightbox-title" class="text-lg font-bold text-slate-900 dark:text-stone-100 mt-0.5 font-serif-geo"></h3>
+          <p id="lightbox-desc" class="text-slate-600 dark:text-stone-300 text-xs sm:text-sm mt-1 leading-relaxed"></p>
+        </div>
+        <button onclick="closeLightbox()" class="px-4 py-2 rounded-xl bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-slate-700 dark:text-stone-300 font-bold text-xs flex-shrink-0">
+          დახურვა
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ==================== BACK TO TOP BUTTON ==================== -->
+  <a 
+    href="#top" 
+    id="back-to-top"
+    class="fixed bottom-6 right-6 z-40 w-11 h-11 rounded-2xl bg-emerald-700 hover:bg-emerald-600 text-white shadow-md backdrop-blur-md flex items-center justify-center transition-all duration-300 opacity-0 pointer-events-none translate-y-4 group" 
+    aria-label="გვერდის დასაწყისში დაბრუნება"
+    title="გვერდის დასაწყისში დაბრუნება"
+  >
+    <svg class="w-5 h-5 transform group-hover:-translate-y-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 10l7-7m0 0l7 7m-7-7v18"/>
+    </svg>
+  </a>
+
+</body>
+</html>

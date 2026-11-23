@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ადმინისტრატორის პანელი | ეკოკლუბი „მოთენა“</title>
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- Google Fonts: Noto Sans Georgian & Noto Serif Georgian -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Georgian:wght@300;400;500;600;700;800;900&family=Noto+Serif+Georgian:wght@600;700&display=swap" rel="stylesheet">
+  
+  <!-- Config & Admin Styles -->
+  <script src="supabase-config.js"></script>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased font-sans">
+
+  <!-- ==================== 1. ავტორიზაციის მოდალური ფანჯარა (LOGIN) ==================== -->
+  <div id="auth-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-8 border border-emerald-100 animate-fade-in">
+      
+      <!-- Brand Header -->
+      <div class="text-center mb-8">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-800 text-white mx-auto mb-4 flex items-center justify-center shadow-lg shadow-emerald-900/20">
+          <svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m8 3 4 8 5-5 5 15H2L8 3z"/>
+            <path d="M12 12c.5-2 2-3.5 4-3.5 1.5 0 2.5 1 2 3-1 3.5-4 5.5-6 6.5" stroke="#34d399" stroke-width="2"/>
+          </svg>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-900 font-serif-geo">ეკოკლუბი „მოთენა“</h1>
+        <p class="text-xs text-emerald-800 font-semibold uppercase tracking-wider mt-1">ადმინისტრატორის მართვის პანელი</p>
+        <p class="text-xs text-slate-500 mt-2">შეიყვანეთ თქვენი მონაცემები სამართავ პანელში შესასვლელად</p>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">ელ-ფოსტა</label>
+          <div class="relative">
+            <input 
+              type="email" 
+              id="login-email" 
+              placeholder="admin@motena.ge" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent bg-stone-50"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">პაროლი</label>
+          <div class="relative">
+            <input 
+              type="password" 
+              id="login-password" 
+              placeholder="••••••••" 
+              required
+              class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent bg-stone-50"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <label class="flex items-center gap-2 cursor-pointer text-slate-600">
+            <input type="checkbox" id="remember-me" class="rounded text-emerald-600 focus:ring-emerald-500">
+            დამიმახსოვრე
+          </label>
+          <button type="button" id="forgot-password-btn" class="text-emerald-700 hover:text-emerald-900 font-semibold">
+            პაროლის აღდგენა?
+          </button>
+        </div>
+
+        <button 
+          type="submit" 
+          id="login-submit-btn" 
+          class="w-full py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow-md shadow-emerald-700/20 transition-all duration-200 flex items-center justify-center gap-2"
+        >
+          <span>შესვლა პანელში</span>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
+        </button>
+      </form>
+
+      <!-- Supabase Connection Setup Notice -->
+      <div class="mt-6 pt-5 border-t border-slate-100 text-center">
+        <button type="button" id="show-config-modal-btn" class="text-xs text-slate-500 hover:text-emerald-700 underline">
+          ⚙️ Supabase კავშირის პარამეტრები
+        </button>
+      </div>
+
+      <div class="mt-4 text-center">
+        <a href="index.html" class="text-xs text-slate-400 hover:text-slate-600 flex items-center justify-center gap-1">
+          ← მთავარ გვერდზე დაბრუნება
+        </a>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- ==================== 2. MAIN ADMIN LAYOUT ==================== -->
+  <div id="admin-app" class="min-h-screen flex flex-col md:flex-row">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-full md:w-64 bg-emerald-950 text-white flex-shrink-0 flex flex-col justify-between">
+      <div>
+        
+        <!-- Sidebar Brand -->
+        <div class="h-20 px-6 flex items-center justify-between border-b border-emerald-900">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-serif-geo font-bold text-white shadow">
+              მ
+            </div>
+            <div>
+              <span class="text-lg font-bold font-serif-geo tracking-tight">მოთენა</span>
+              <p class="text-[10px] text-emerald-400 uppercase tracking-widest font-semibold">Admin Panel</p>
+            </div>
+          </div>
+          <a href="index.html" target="_blank" title="საიტის ნახვა" class="text-emerald-400 hover:text-white p-1 rounded-lg hover:bg-emerald-900 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="p-4 space-y-1.5">
+          <button data-tab="overview" class="admin-nav-btn active">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span>მიმოხილვა</span>
+          </button>
+
+          <!-- NEW: ბალდის ისტორია -->
+          <button data-tab="history" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            <span>ბალდის ისტორია</span>
+          </button>
+
+          <!-- NEW: ღირსშესანიშნაობები -->
+          <button data-tab="landmarks" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>ღირსშესანიშნაობები</span>
+          </button>
+
+          <button data-tab="activities" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            <span>აქტივობები</span>
+          </button>
+
+          <button data-tab="projects" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <span>პროექტები</span>
+          </button>
+
+          <button data-tab="geography" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <span>გეოგრაფიული ზოლი</span>
+          </button>
+
+          <button data-tab="gallery" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            <span>ფოტო გალერეა</span>
+          </button>
+
+          <button data-tab="announcements" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"/></svg>
+            <span>განცხადებები</span>
+          </button>
+
+          <button data-tab="settings" class="admin-nav-btn">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            <span>პარამეტრები & SQL</span>
+          </button>
+        </nav>
+
+      </div>
+
+      <!-- User Info & Logout -->
+      <div class="p-4 border-t border-emerald-900 bg-emerald-950/60">
+        <div class="flex items-center justify-between">
+          <div class="overflow-hidden mr-2">
+            <p id="current-user-email" class="text-xs font-semibold text-emerald-200 truncate">admin@motena.ge</p>
+            <p class="text-[10px] text-emerald-400">ავტორიზებული ადმინი</p>
+          </div>
+          <button id="logout-btn" title="გასვლა" class="p-2 rounded-xl hover:bg-emerald-900 text-rose-300 hover:text-rose-200 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 flex flex-col min-w-0 bg-slate-50">
+      
+      <!-- Top Bar -->
+      <header class="h-20 bg-white border-b border-slate-200 px-6 sm:px-8 flex items-center justify-between">
+        <div>
+          <h2 id="page-title" class="text-2xl font-bold text-slate-900 font-serif-geo">მიმოხილვა</h2>
+          <p id="page-subtitle" class="text-xs text-slate-500">ეკოკლუბ „მოთენას“ მართვის სისტემა</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <span id="db-status-badge" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            შემოწმება...
+          </span>
+          <a href="index.html" target="_blank" class="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition flex items-center gap-1.5">
+            <span>საიტი</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
+          </a>
+        </div>
+      </header>
+
+      <!-- Content Sections (Tab Panes) -->
+      <div class="p-6 sm:p-8 flex-1 overflow-y-auto">
+
+        <!-- TAB 1: OVERVIEW -->
+        <section id="tab-overview" class="admin-tab-pane space-y-8">
+          
+          <!-- Stat Counter Cards Grid -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5">
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <span class="text-xs uppercase font-bold text-slate-400">ღირსშესანიშნაობები</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span id="stat-landmarks" class="text-3xl font-black text-slate-900">6</span>
+                <span class="text-emerald-700 font-semibold text-xs">ძეგლები</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <span class="text-xs uppercase font-bold text-slate-400">აქტივობები</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span id="stat-activities" class="text-3xl font-black text-slate-900">0</span>
+                <span class="text-emerald-700 font-semibold text-xs">გამოქვეყნებული</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <span class="text-xs uppercase font-bold text-slate-400">პროექტები</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span id="stat-projects" class="text-3xl font-black text-slate-900">0</span>
+                <span class="text-teal-700 font-semibold text-xs">აქტიური</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <span class="text-xs uppercase font-bold text-slate-400">გეოგრაფია</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span id="stat-geography" class="text-3xl font-black text-slate-900">0</span>
+                <span class="text-blue-700 font-semibold text-xs">ფაქტები</span>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
+              <span class="text-xs uppercase font-bold text-slate-400">გალერეა</span>
+              <div class="flex items-baseline justify-between mt-2">
+                <span id="stat-gallery" class="text-3xl font-black text-slate-900">0</span>
+                <span class="text-amber-700 font-semibold text-xs">ფოტოები</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions & System Info -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+              <h3 class="text-lg font-bold text-slate-900 mb-4 font-serif-geo">სწრაფი ქმედებები</h3>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <button onclick="switchTab('history')" class="p-4 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-left transition flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-amber-700 text-white flex items-center justify-center flex-shrink-0 font-bold">🏛️</div>
+                  <div>
+                    <h4 class="font-bold text-sm">ბალდის ისტორია</h4>
+                    <p class="text-xs text-slate-500">ლეგენდა & მონასტერი</p>
+                  </div>
+                </button>
+
+                <button onclick="switchTab('landmarks'); openLandmarkModal();" class="p-4 rounded-2xl bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-left transition flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center flex-shrink-0 font-bold">📍</div>
+                  <div>
+                    <h4 class="font-bold text-sm">ღირსშესანიშნაობა</h4>
+                    <p class="text-xs text-slate-500">ახალი ადგილის დამატება</p>
+                  </div>
+                </button>
+
+                <button onclick="switchTab('activities'); openActivityModal();" class="p-4 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-200 text-left transition flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-teal-700 text-white flex items-center justify-center flex-shrink-0 font-bold">+</div>
+                  <div>
+                    <h4 class="font-bold text-sm">ახალი აქტივობა</h4>
+                    <p class="text-xs text-slate-500">დასუფთავება, სემინარი</p>
+                  </div>
+                </button>
+
+                <button onclick="switchTab('gallery'); openGalleryModal();" class="p-4 rounded-2xl bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 text-left transition flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-blue-700 text-white flex items-center justify-center flex-shrink-0 font-bold">+</div>
+                  <div>
+                    <h4 class="font-bold text-sm">ფოტოს ატვირთვა</h4>
+                    <p class="text-xs text-slate-500">გალერეაში დამატება</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            <div class="lg:col-span-5 bg-gradient-to-br from-emerald-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col justify-between">
+              <div>
+                <span class="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-bold uppercase tracking-wider mb-3 inline-block">
+                  სისტემის სტატუსი
+                </span>
+                <h3 class="text-xl font-bold font-serif-geo mb-2">Supabase ინტეგრაცია</h3>
+                <p id="system-status-desc" class="text-slate-300 text-xs leading-relaxed mb-4">
+                  მოწმდება კავშირი Supabase მონაცემთა ბაზასთან და Storage-თან...
+                </p>
+              </div>
+
+              <div class="pt-4 border-t border-emerald-900 flex items-center justify-between">
+                <span class="text-xs text-emerald-400">ბალდის საჯარო სკოლა</span>
+                <button onclick="switchTab('settings')" class="text-xs font-bold text-emerald-300 hover:text-white underline">
+                  კონფიგურაცია →
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Recent Items List -->
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+            <h3 class="text-lg font-bold text-slate-900 mb-4 font-serif-geo">ბოლო მასალები</h3>
+            <div id="overview-recent-list" class="space-y-3">
+              <!-- Rendered via JS -->
+            </div>
+          </div>
+
+        </section>
+
+        <!-- TAB: BALDA HISTORY (ბალდის ისტორია) -->
+        <section id="tab-history" class="admin-tab-pane hidden space-y-6 max-w-4xl">
+          <div class="flex items-center justify-between">
+            <div>
+              <h3 class="text-xl font-bold text-slate-900 font-serif-geo">ბალდის ისტორიისა და ლეგენდის მართვა</h3>
+              <p class="text-xs text-slate-500 mt-0.5">სოფლის სახელწოდების წარმოშობის ხალხური გადმოცემა და ტაძრის მონაცემები</p>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+            <form id="history-form" class="space-y-5">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">სათაური</label>
+                <input type="text" id="hist-title" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none" required>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ხალხური გადმოცემის ტექსტი (ლეგენდა) *</label>
+                <textarea id="hist-legend" rows="6" class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none leading-relaxed" required></textarea>
+                <p class="text-[11px] text-amber-800 mt-1">⚠️ საიტზე მკაფიოდ იქნება მითითებული, რომ ეს არის ხალხური გადმოცემა და არა დადასტურებული ისტორიული ფაქტი.</p>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ისტორიული კონტექსტი</label>
+                <textarea id="hist-context" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none leading-relaxed"></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ტაძრის სახელი</label>
+                  <input type="text" id="hist-church-name" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ფოტოს ავტორი / წყარო</label>
+                  <input type="text" id="hist-img-author" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ეკლესიის რეალური ფოტო (ატვირთვა ან URL)</label>
+                <div class="space-y-2">
+                  <input type="file" id="hist-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+                  <input type="url" id="hist-img-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ეკლესიის კოორდინატი (Latitude)</label>
+                  <input type="number" step="any" id="hist-lat" placeholder="42.482000" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 uppercase mb-1.5">ეკლესიის კოორდინატი (Longitude)</label>
+                  <input type="number" step="any" id="hist-lng" placeholder="42.408500" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" id="save-history-btn" class="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">
+                  ისტორიის მონაცემების შენახვა
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB: LANDMARKS (ღირსშესანიშნაობები) -->
+        <section id="tab-landmarks" class="admin-tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <h3 class="text-xl font-bold text-slate-900 font-serif-geo">ბალდის ღირსშესანიშნაობების მართვა</h3>
+              <p class="text-xs text-slate-500 mt-0.5">კანიონი, მონასტერი, ჩანჩქერები, მღვიმეები და ინტერაქტიული რუკის წერტილები</p>
+            </div>
+            <button onclick="openLandmarkModal()" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              ახალი ადგილის დამატება
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <th class="py-4 px-6">ფოტო & სახელი</th>
+                    <th class="py-4 px-6">კატეგორია & ლოკაცია</th>
+                    <th class="py-4 px-6">კოორდინატები</th>
+                    <th class="py-4 px-6">სტატუსი</th>
+                    <th class="py-4 px-6 text-right">მოქმედება</th>
+                  </tr>
+                </thead>
+                <tbody id="landmarks-table-body" class="divide-y divide-slate-100 text-sm">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: ACTIVITIES -->
+        <section id="tab-activities" class="admin-tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 class="text-xl font-bold text-slate-900 font-serif-geo">აქტივობების მართვა</h3>
+            <button onclick="openActivityModal()" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              ახალი აქტივობის დამატება
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <th class="py-4 px-6">ფოტო & სათაური</th>
+                    <th class="py-4 px-6">კატეგორია</th>
+                    <th class="py-4 px-6">თარიღი</th>
+                    <th class="py-4 px-6">სტატუსი</th>
+                    <th class="py-4 px-6 text-right">მოქმედება</th>
+                  </tr>
+                </thead>
+                <tbody id="activities-table-body" class="divide-y divide-slate-100 text-sm">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: PROJECTS -->
+        <section id="tab-projects" class="admin-tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 class="text-xl font-bold text-slate-900 font-serif-geo">პროექტების მართვა</h3>
+            <button onclick="openProjectModal()" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              ახალი პროექტის დამატება
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <th class="py-4 px-6">პროექტი</th>
+                    <th class="py-4 px-6">ვადები</th>
+                    <th class="py-4 px-6">სტატუსი</th>
+                    <th class="py-4 px-6 text-right">მოქმედება</th>
+                  </tr>
+                </thead>
+                <tbody id="projects-table-body" class="divide-y divide-slate-100 text-sm">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: GEOGRAPHY -->
+        <section id="tab-geography" class="admin-tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 class="text-xl font-bold text-slate-900 font-serif-geo">გეოგრაფიული ზოლის მართვა</h3>
+            <button onclick="openGeographyModal()" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              ახალი ფაქტის დამატება
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <th class="py-4 px-6">ფაქტი</th>
+                    <th class="py-4 px-6">კატეგორია & რეგიონი</th>
+                    <th class="py-4 px-6">ბეიჯი</th>
+                    <th class="py-4 px-6 text-right">მოქმედება</th>
+                  </tr>
+                </thead>
+                <tbody id="geography-table-body" class="divide-y divide-slate-100 text-sm">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: GALLERY -->
+        <section id="tab-gallery" class="admin-tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 class="text-xl font-bold text-slate-900 font-serif-geo">ფოტო გალერეის მართვა</h3>
+            <button onclick="openGalleryModal()" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              ფოტოს ატვირთვა
+            </button>
+          </div>
+
+          <div id="gallery-admin-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Rendered via JS -->
+          </div>
+        </section>
+
+        <!-- TAB: ANNOUNCEMENTS -->
+        <section id="tab-announcements" class="admin-tab-pane hidden space-y-6">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h3 class="text-xl font-bold text-slate-900 font-serif-geo">განცხადებების მართვა</h3>
+            <button onclick="openAnnouncementModal()" class="px-5 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+              ახალი განცხადების დამატება
+            </button>
+          </div>
+
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <th class="py-4 px-6">სათაური და შინაარსი</th>
+                    <th class="py-4 px-6">სტატუსი</th>
+                    <th class="py-4 px-6">მთავარი ბანერი</th>
+                    <th class="py-4 px-6 text-right">მოქმედება</th>
+                  </tr>
+                </thead>
+                <tbody id="announcements-table-body" class="divide-y divide-slate-100 text-sm">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB: SETTINGS & SQL -->
+        <section id="tab-settings" class="admin-tab-pane hidden space-y-8 max-w-4xl">
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+            <h3 class="text-xl font-bold text-slate-900 font-serif-geo mb-2">Supabase კონფიგურაცია</h3>
+            <p class="text-slate-600 text-xs sm:text-sm mb-6 leading-relaxed">
+              აქ შეგიძლიათ შეიყვანოთ თქვენი Supabase პროექტის პარამეტრები კოდის შეცვლის გარეშე. მონაცემები ინახება თქვენს ბრაუზერში.
+            </p>
+
+            <form id="supabase-config-form" class="space-y-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Supabase Project URL</label>
+                <input 
+                  type="url" 
+                  id="settings-supabase-url" 
+                  placeholder="https://xyzcompany.supabase.co" 
+                  required
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-stone-50"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Supabase Public Anon Key</label>
+                <textarea 
+                  id="settings-supabase-key" 
+                  rows="3" 
+                  placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." 
+                  required
+                  class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-stone-50 font-mono text-xs"
+                ></textarea>
+              </div>
+
+              <div class="flex items-center gap-3 pt-2">
+                <button type="submit" class="px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">
+                  შენახვა და გადატვირთვა
+                </button>
+                <button type="button" id="test-connection-btn" class="px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">
+                  კავშირის ტესტი
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-lg font-bold text-slate-900 font-serif-geo">მონაცემთა ბაზის SQL სკრიპტი (schema.sql)</h3>
+              <span class="text-xs px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold">განახლებულია</span>
+            </div>
+            <p class="text-slate-600 text-xs sm:text-sm mb-4 leading-relaxed">
+              გადადით თქვენს Supabase Dashboard-ში -> <strong>SQL Editor</strong> -> ჩასვით განახლებული <code class="bg-slate-100 px-1 py-0.5 rounded text-emerald-800 font-mono">schema.sql</code>-ის შიგთავსი და დააჭირეთ <strong>Run</strong>. იგი შეიცავს ბალდის ისტორიისა და ღირსშესანიშნაობების ცხრილებსაც.
+            </p>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+  </div>
+
+
+  <!-- ==================== 3. CRUD MODALS ==================== -->
+
+  <!-- Modal: Landmark (Add / Edit) -->
+  <div id="landmark-modal-admin" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="landmark-modal-title" class="text-xl font-bold text-slate-900 font-serif-geo">ღირსშესანიშნაობის დამატება</h3>
+        <button onclick="closeLandmarkModalAdmin()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="landmark-form" class="space-y-4">
+        <input type="hidden" id="lm-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ადგილის დასახელება *</label>
+          <input type="text" id="lm-title" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ქვესათაური / ეპითეტი</label>
+            <input type="text" id="lm-subtitle" placeholder="მაგ: მდინარე აბაშის კირქვული ხეობა" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კატეგორია</label>
+            <input type="text" id="lm-category" placeholder="ბუნების ძეგლი / ისტორიული" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">მდებარეობა (ზუსტი ტექსტი) *</label>
+            <input type="text" id="lm-location-type" placeholder="სოფელი ბალდა / ბალდის ჩრდილოეთით" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">მნიშვნელობა (მოკლე ფაქტი)</label>
+            <input type="text" id="lm-significance" placeholder="სიმაღლე, სიგრძე, სტატუსი" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">მოკლე აღწერა (ბარათისთვის) *</label>
+          <textarea id="lm-desc" rows="2" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სრული ინფორმაცია (მოდალისთვის)</label>
+          <textarea id="lm-full" rows="3" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კოორდინატი Latitude *</label>
+            <input type="number" step="any" id="lm-lat" placeholder="42.484200" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კოორდინატი Longitude *</label>
+            <input type="number" step="any" id="lm-lng" placeholder="42.415000" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">რეალური ფოტო (ატვირთვა ან URL) *</label>
+          <div class="space-y-2">
+            <input type="file" id="lm-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+            <input type="url" id="lm-image-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტოს ავტორი / წყარო</label>
+            <input type="text" id="lm-image-author" placeholder="Georgian Travel Guide" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტოს წყაროს ბმული</label>
+            <input type="url" id="lm-image-source" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeLandmarkModalAdmin()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-landmark-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">შენახვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Activity (Add / Edit) -->
+  <div id="activity-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="activity-modal-title" class="text-xl font-bold text-slate-900 font-serif-geo">აქტივობის დამატება</h3>
+        <button onclick="closeActivityModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="activity-form" class="space-y-4">
+        <input type="hidden" id="activity-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სათაური *</label>
+          <input type="text" id="act-title" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კატეგორია</label>
+            <select id="act-category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+              <option value="დასუფთავება">დასუფთავება</option>
+              <option value="ცნობიერება">ცნობიერება</option>
+              <option value="ბოტანიკა">ბოტანიკა</option>
+              <option value="გეოგრაფია">გეოგრაფია</option>
+              <option value="თარიღები">თარიღები</option>
+              <option value="ეკოლოგია">ეკოლოგია</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">თარიღი</label>
+            <input type="date" id="act-date" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ლოკაცია</label>
+            <input type="text" id="act-location" placeholder="სოფელი ბალდა" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ბეიჯის ტექსტი</label>
+            <input type="text" id="act-badge" placeholder="ყოველთვიური აქტივობა" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">აღწერა *</label>
+          <textarea id="act-desc" rows="3" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტოს ატვირთვა ან URL</label>
+          <div class="space-y-2">
+            <input type="file" id="act-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+            <input type="url" id="act-image-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 pt-2">
+          <input type="checkbox" id="act-published" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+          <label for="act-published" class="text-sm font-semibold text-slate-700 cursor-pointer">გამოქვეყნდეს საჯაროდ</label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeActivityModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-activity-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">შენახვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Project (Add / Edit) -->
+  <div id="project-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="project-modal-title" class="text-xl font-bold text-slate-900 font-serif-geo">პროექტის დამატება</h3>
+        <button onclick="closeProjectModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="project-form" class="space-y-4">
+        <input type="hidden" id="project-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">პროექტის სათაური *</label>
+          <input type="text" id="proj-title" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">დაწყების თარიღი</label>
+            <input type="text" id="proj-start-date" placeholder="მაგ: 2026-01-15" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">დასრულების თარიღი</label>
+            <input type="text" id="proj-end-date" placeholder="მიმდინარე" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სტატუსი</label>
+            <select id="proj-status" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+              <option value="აქტიური">აქტიური</option>
+              <option value="მიმდინარე">მიმდინარე</option>
+              <option value="დარიგების პროცესში">დარიგების პროცესში</option>
+              <option value="დასრულებული">დასრულებული</option>
+              <option value="დაგეგმილი">დაგეგმილი</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">პროექტის აღწერა *</label>
+          <textarea id="proj-desc" rows="3" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">მიღწეული შედეგები</label>
+          <textarea id="proj-results" rows="2" placeholder="კონკრეტული შედეგები..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტო (ატვირთვა ან URL)</label>
+          <div class="space-y-2">
+            <input type="file" id="proj-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+            <input type="url" id="proj-image-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeProjectModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-project-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">შენახვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Geography Fact (Add / Edit) -->
+  <div id="geography-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="geography-modal-title" class="text-xl font-bold text-slate-900 font-serif-geo">გეოგრაფიული ფაქტის დამატება</h3>
+        <button onclick="closeGeographyModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="geography-form" class="space-y-4">
+        <input type="hidden" id="geo-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სათაური *</label>
+          <input type="text" id="geo-title" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კატეგორია</label>
+            <input type="text" id="geo-category" placeholder="მაგ: ჰიდროლოგია & რელიეფი" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">რეგიონი / ლოკაცია</label>
+            <input type="text" id="geo-region" placeholder="სამეგრელო, საქართველო" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ბეიჯის ტექსტი / რეკორდი</label>
+          <input type="text" id="geo-badge" placeholder="საქართველო • ბალდა" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">აღწერა *</label>
+          <textarea id="geo-desc" rows="3" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტო (ატვირთვა ან URL)</label>
+          <div class="space-y-2">
+            <input type="file" id="geo-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+            <input type="url" id="geo-image-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">წყაროს ბმული (არასავალდებულო)</label>
+          <input type="url" id="geo-source-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeGeographyModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-geography-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">შენახვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Gallery Photo (Add) -->
+  <div id="gallery-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 class="text-xl font-bold text-slate-900 font-serif-geo">ფოტოს ატვირთვა გალერეაში</h3>
+        <button onclick="closeGalleryModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="gallery-form" class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სათაური *</label>
+          <input type="text" id="gal-title" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კატეგორია</label>
+          <select id="gal-category" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+            <option value="ბუნება">ბუნება</option>
+            <option value="დასუფთავება">დასუფთავება</option>
+            <option value="ბოტანიკა">ბოტანიკა</option>
+            <option value="გეოგრაფია">გეოგრაფია</option>
+            <option value="გამწვანება">გამწვანება</option>
+            <option value="სასკოლო">სასკოლო</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">აღწერა</label>
+          <textarea id="gal-desc" rows="2" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტოს ფაილი ან URL *</label>
+          <div class="space-y-2">
+            <input type="file" id="gal-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+            <input type="url" id="gal-image-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeGalleryModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-gallery-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">ატვირთვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Announcement (Add / Edit) -->
+  <div id="announcement-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-md w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100">
+      <div class="flex items-center justify-between mb-6">
+        <h3 id="announcement-modal-title" class="text-xl font-bold text-slate-900 font-serif-geo">განცხადების დამატება</h3>
+        <button onclick="closeAnnouncementModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="announcement-form" class="space-y-4">
+        <input type="hidden" id="ann-id">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სათაური *</label>
+          <input type="text" id="ann-title" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">შინაარსი *</label>
+          <textarea id="ann-content" rows="3" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none"></textarea>
+        </div>
+
+        <div class="space-y-2 pt-1">
+          <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+            <input type="checkbox" id="ann-active" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+            <span>აქტიურია</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+            <input type="checkbox" id="ann-important" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+            <span>მთავარ გვერდზე ბანერად გამოტანა</span>
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeAnnouncementModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-announcement-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">შენახვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Landmark (Add / Edit) -->
+  <div id="landmark-modal" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm hidden items-center justify-center p-4">
+    <div class="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 border border-emerald-100 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 id="landmark-modal-title" class="text-xl font-bold text-slate-900 font-serif-geo">ღირსშესანიშნაობის დამატება</h3>
+          <p class="text-xs text-slate-500">ბალდის ბუნებრივი და კულტურული მემკვიდრეობა</p>
+        </div>
+        <button onclick="closeLandmarkModal()" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center text-lg font-bold">&times;</button>
+      </div>
+
+      <form id="landmark-form" class="space-y-4">
+        <input type="hidden" id="landmark-id">
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">სახელი / სათაური *</label>
+          <input type="text" id="lm-title" required placeholder="მაგ: ბალდის კანიონი" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">კატეგორია</label>
+            <input type="text" id="lm-category" placeholder="მაგ: კანიონი, მღვიმე, ჩანჩქერი, მონასტერი" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ლოკაციის ტიპი *</label>
+            <select id="lm-location-type" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+              <option value="inside_balda">სოფელ ბალდაში (ბალდის ტერიტორია)</option>
+              <option value="surrounding">ბალდის შემოგარენი / მარტვილის მუნიციპალიტეტი</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ზუსტი ადგილმდებარეობის აღწერა</label>
+          <input type="text" id="lm-location-text" placeholder="მაგ: სოფელი პირველი ბალდა, მდინარე აბაშის ხეობა" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ბეიჯი / სტატუსი</label>
+          <input type="text" id="lm-badge" placeholder="მაგ: ბუნების ძეგლი • კანიონი" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">მოკლე დახასიათება *</label>
+          <textarea id="lm-desc" rows="3" required placeholder="ადგილის მოკლე აღწერა..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none leading-relaxed"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ისტორიულ-გეოგრაფიული მნიშვნელობა & დეტალები</label>
+          <textarea id="lm-history" rows="3" placeholder="გეოლოგიური წარმოშობა, ისტორია, მორფოლოგია..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:ring-2 focus:ring-emerald-600 focus:outline-none leading-relaxed"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase mb-1">რეალური ფოტო (ატვირთვა ან URL) *</label>
+          <div class="space-y-2">
+            <input type="file" id="lm-file" accept="image/*" class="w-full text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-100 file:text-emerald-800 hover:file:bg-emerald-200 cursor-pointer">
+            <input type="url" id="lm-image-url" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">ფოტოს წყარო / ავტორი</label>
+            <input type="text" id="lm-photo-author" placeholder="Georgian Travel Guide" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">განედი (Latitude)</label>
+            <input type="number" step="any" id="lm-lat" placeholder="42.4842" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">გრძედი (Longitude)</label>
+            <input type="number" step="any" id="lm-lng" placeholder="42.4150" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-emerald-600 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="flex items-center gap-6 pt-2">
+          <label class="flex items-center gap-2 cursor-pointer text-sm text-slate-700">
+            <input type="checkbox" id="lm-featured" checked class="rounded text-emerald-600 focus:ring-emerald-500">
+            <span>რჩეული ადგილი</span>
+          </label>
+          <div class="flex items-center gap-2">
+            <label class="text-xs font-bold text-slate-700 uppercase">რიგითობა:</label>
+            <input type="number" id="lm-order" value="1" min="1" max="99" class="w-16 px-2 py-1 rounded-lg border border-slate-200 text-xs text-center">
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeLandmarkModal()" class="px-5 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm">გაუქმება</button>
+          <button type="submit" id="save-landmark-btn" class="px-6 py-2.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-sm shadow">შენახვა</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Admin JavaScript Controller -->
+  <script src="admin.js"></script>
+</body>
+</html>
